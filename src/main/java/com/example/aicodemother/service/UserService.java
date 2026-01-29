@@ -1,9 +1,14 @@
 package com.example.aicodemother.service;
 
+import com.example.aicodemother.model.dto.UserQueryRequest;
 import com.example.aicodemother.model.vo.LoginUserVO;
+import com.example.aicodemother.model.vo.UserVO;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.example.aicodemother.model.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 /**
  * 用户 服务层。
@@ -48,12 +53,36 @@ public interface UserService extends IService<User> {
     User getLoginUser(HttpServletRequest request);
 
     /**
+     * 获取脱敏的用户信息
+     *
+     * @param user 用户信息
+     * @return 脱敏的用户信息
+     */
+    UserVO getUserVO(User user);
+
+    /**
+     * 获取脱敏的用户信息列表（分页）
+     *
+     * @param userList 用户列表
+     * @return 脱敏的用户信息列表
+     */
+    List<UserVO> getUserVOList(List<User> userList);
+
+    /**
      * 用户注销
      *
      * @param request 请求对象
      * @return 退出登录是否成功
      */
     boolean userLogout(HttpServletRequest request);
+
+    /**
+     * 根据查询条件构造数据查询参数
+     *
+     * @param userQueryRequest 用户查询条件
+     * @return 查询条件
+     */
+    QueryWrapper getQueryWrapper(UserQueryRequest userQueryRequest);
 
     /**
      * 获取加密密码

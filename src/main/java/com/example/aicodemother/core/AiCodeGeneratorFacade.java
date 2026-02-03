@@ -38,7 +38,7 @@ public class AiCodeGeneratorFacade {
             case HTML -> generateAndSaveHtmlCode(userMessage);
             case MULTI_FILE -> generateAndSaveMultiFileCode(userMessage);
             default -> {
-                String errorMessage = "不支持的生成类型: " + codeGenTypeEnum.getValue();
+                String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, errorMessage);
             }
         };
@@ -66,7 +66,6 @@ public class AiCodeGeneratorFacade {
 
 
 
-
     /**
      * 统一入口：根据类型生成并保存代码（流式输出）
      *
@@ -82,7 +81,7 @@ public class AiCodeGeneratorFacade {
             case HTML -> generateAndSaveHtmlCodeStream(userMessage);
             case MULTI_FILE -> generateAndSaveMultiFileCodeStream(userMessage);
             default -> {
-                String errorMessage = "不支持的生成类型: " + codeGenTypeEnum.getValue();
+                String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, errorMessage);
             }
         };
@@ -97,10 +96,8 @@ public class AiCodeGeneratorFacade {
         Flux<String> result = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);
         // 字符串拼接器，用于当流式返回所有的代码之后，再报错代码
         StringBuilder codeBuilder = new StringBuilder();
-        return result.doOnNext(chunk -> {
-            // 实时收集代码片段
-            codeBuilder.append(chunk);
-        }).doOnComplete(() -> {
+        // 实时收集代码片段
+        return result.doOnNext(codeBuilder::append).doOnComplete(() -> {
             try {
                 // 当流式返回完成后，保存代码
                 String completeHtmlCode = codeBuilder.toString();
@@ -124,10 +121,8 @@ public class AiCodeGeneratorFacade {
         Flux<String> result = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
         // 字符串拼接器，用于当流式返回所有的代码之后，再报错代码
         StringBuilder codeBuilder = new StringBuilder();
-        return result.doOnNext(chunk -> {
-            // 实时收集代码片段
-            codeBuilder.append(chunk);
-        }).doOnComplete(() -> {
+        // 实时收集代码片段
+        return result.doOnNext(codeBuilder::append).doOnComplete(() -> {
             try {
                 // 当流式返回完成后，保存代码
                 String completeMultiFileCode = codeBuilder.toString();

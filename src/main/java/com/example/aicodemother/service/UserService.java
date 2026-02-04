@@ -1,6 +1,6 @@
 package com.example.aicodemother.service;
 
-import com.example.aicodemother.model.dto.UserQueryRequest;
+import com.example.aicodemother.model.dto.user.UserQueryRequest;
 import com.example.aicodemother.model.vo.LoginUserVO;
 import com.example.aicodemother.model.vo.UserVO;
 import com.mybatisflex.core.query.QueryWrapper;

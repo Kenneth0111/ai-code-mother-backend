@@ -9,7 +9,7 @@ import com.example.aicodemother.constant.UserConstant;
 import com.example.aicodemother.exception.BusinessException;
 import com.example.aicodemother.exception.ErrorCode;
 import com.example.aicodemother.exception.ThrowUtils;
-import com.example.aicodemother.model.dto.*;
+import com.example.aicodemother.model.dto.user.*;
 import com.example.aicodemother.model.entity.User;
 import com.example.aicodemother.model.vo.LoginUserVO;
 import com.example.aicodemother.model.vo.UserVO;

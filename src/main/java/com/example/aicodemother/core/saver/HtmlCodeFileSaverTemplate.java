@@ -1,6 +1,6 @@
 package com.example.aicodemother.core.saver;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.example.aicodemother.ai.model.HtmlCodeResult;
 import com.example.aicodemother.exception.BusinessException;
 import com.example.aicodemother.exception.ErrorCode;
@@ -24,7 +24,7 @@ public class HtmlCodeFileSaverTemplate extends CodeFileSaverTemplate<HtmlCodeRes
     @Override
     protected void validateInput(HtmlCodeResult result) {
         super.validateInput(result);
-        if (StrUtil.isBlank(result.getHtmlCode())) {
+        if (CharSequenceUtil.isBlank(result.getHtmlCode())) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "HTML代码不能为空");
         }
     }

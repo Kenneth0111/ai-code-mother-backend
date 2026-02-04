@@ -1,6 +1,6 @@
 package com.example.aicodemother.core.saver;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.example.aicodemother.ai.model.MultiFileCodeResult;
 import com.example.aicodemother.exception.BusinessException;
 import com.example.aicodemother.exception.ErrorCode;
@@ -27,7 +27,7 @@ public class MultiFileCodeFileSaverTemplate extends CodeFileSaverTemplate<MultiF
     protected void validateInput(MultiFileCodeResult result) {
         super.validateInput(result);
         // 至少要有 HTML 代码，CSS 和 JS 可以为空
-        if (StrUtil.isBlank(result.getHtmlCode())) {
+        if (CharSequenceUtil.isBlank(result.getHtmlCode())) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "HTML代码不能为空");
         }
     }

@@ -140,8 +140,12 @@ public class VueProjectBuilder {
                 log.error("命令执行失败，退出码: {}", exitCode);
                 return false;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("执行命令时被中断: {}", command, e);
+            return false;
         } catch (Exception e) {
-            log.error("执行命令失败: {}, 错误信息: {}", command, e.getMessage());
+            log.error("执行命令失败: {}, 错误信息: {}", command, e.getMessage(), e);
             return false;
         }
     }

@@ -2,6 +2,10 @@ package com.example.aicodemother.exception;
 
 public class ThrowUtils {
 
+    private ThrowUtils() {
+        // 工具类不允许实例化
+    }
+
     /**
      * 条件成立则抛异常
      *

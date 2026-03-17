@@ -2,7 +2,7 @@ package com.example.aicodemother.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.example.aicodemother.exception.BusinessException;
 import com.example.aicodemother.exception.ErrorCode;
 import com.example.aicodemother.model.dto.user.UserQueryRequest;
@@ -21,12 +21,11 @@ import org.springframework.util.DigestUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.example.aicodemother.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
- * 用户 服务层实现。
+ * 用户服务层实现
  *
  * @author <a href="https://github.com/Kenneth0111">程序员张博洋</a>
  */
@@ -36,7 +35,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1. 校验参数
-        if (StrUtil.hasBlank(userAccount, userPassword, checkPassword)) {
+        if (CharSequenceUtil.hasBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         if (userAccount.length() < 4) {
@@ -83,7 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
     @Override
     public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1. 校验参数
-        if (StrUtil.hasBlank(userAccount, userPassword)) {
+        if (CharSequenceUtil.hasBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         if (userAccount.length() < 4) {
@@ -142,7 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         }
         return userList.stream()
                 .map(this::getUserVO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

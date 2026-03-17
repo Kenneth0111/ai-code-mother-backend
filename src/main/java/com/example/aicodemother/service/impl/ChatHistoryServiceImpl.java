@@ -126,7 +126,7 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
      * 获取查询包装类
      *
      * @param chatHistoryQueryRequest 对话历史查询请求
-     * @return
+     * @return 查询包装类
      */
     @Override
     public QueryWrapper getQueryWrapper(ChatHistoryQueryRequest chatHistoryQueryRequest) {
@@ -161,6 +161,5 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
         }
         return queryWrapper;
     }
-
 
 }

@@ -18,7 +18,8 @@ public class ReasoningStreamingChatModelConfig {
 
     /**
      * 推理流式模型（用于 Vue 项目生成，带工具调用）
-     * @return
+     *
+     * @return 配置好的 StreamingChatModel 实例，用于处理带工具调用的流式聊天请求
      */
     @Bean
     public StreamingChatModel reasoningStreamingChatModel() {

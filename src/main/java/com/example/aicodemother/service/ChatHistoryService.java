@@ -43,7 +43,7 @@ public interface ChatHistoryService extends IService<ChatHistory> {
      * @param pageSize       页面大小
      * @param lastCreateTime 最后一条记录的创建时间
      * @param loginUser      登录用户
-     * @return
+     * @return 对话历史
      */
     Page<ChatHistory> listAppChatHistoryByPage(Long appId, int pageSize,
                                                LocalDateTime lastCreateTime,
@@ -63,7 +63,7 @@ public interface ChatHistoryService extends IService<ChatHistory> {
      * 构造查询条件
      *
      * @param chatHistoryQueryRequest 对话历史查询请求
-     * @return
+     * @return 查询条件
      */
     QueryWrapper getQueryWrapper(ChatHistoryQueryRequest chatHistoryQueryRequest);
 }

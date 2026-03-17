@@ -2,6 +2,7 @@ package com.example.aicodemother.model.dto.app;
 
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -30,5 +31,6 @@ public class AppAdminUpdateRequest implements Serializable {
      */
     private Integer priority;
 
+    @Serial
     private static final long serialVersionUID = 1L;
 }

@@ -10,6 +10,10 @@ import com.example.aicodemother.model.enums.CodeGenTypeEnum;
  */
 public class CodeParserExecutor {
 
+    private CodeParserExecutor() {
+        // 工具类不允许被实例化
+    }
+
     private static final HtmlCodeParser htmlCodeParser = new HtmlCodeParser();
 
     private static final MultiFileCodeParser multiFileCodeParser = new MultiFileCodeParser();

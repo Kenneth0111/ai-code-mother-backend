@@ -1,6 +1,6 @@
 package com.example.aicodemother.model.enums;
 
-import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.ObjectUtil;
 import lombok.Getter;
 
 @Getter
@@ -25,7 +25,7 @@ public enum UserRoleEnum {
      * @return 枚举值
      */
     public static UserRoleEnum getEnumByValue(String value) {
-        if (ObjUtil.isEmpty(value)) {
+        if (ObjectUtil.isEmpty(value)) {
             return null;
         }
         for (UserRoleEnum anEnum : UserRoleEnum.values()) {

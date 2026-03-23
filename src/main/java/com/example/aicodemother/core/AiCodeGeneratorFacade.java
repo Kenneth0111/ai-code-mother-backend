@@ -9,6 +9,7 @@ import com.example.aicodemother.ai.model.message.AiResponseMessage;
 import com.example.aicodemother.ai.model.message.ToolExecutedMessage;
 import com.example.aicodemother.ai.model.message.ToolRequestMessage;
 import com.example.aicodemother.constant.AppConstant;
+import com.example.aicodemother.core.builder.VueProjectBuilder;
 import com.example.aicodemother.core.parser.CodeParserExecutor;
 import com.example.aicodemother.core.saver.CodeFileSaverExecutor;
 import com.example.aicodemother.exception.BusinessException;
@@ -30,7 +31,10 @@ import java.io.File;
 @Service
 @Slf4j
 public class AiCodeGeneratorFacade {
-    
+
+    @Resource
+    private VueProjectBuilder vueProjectBuilder;
+
     @Resource
     private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
 
@@ -39,7 +43,7 @@ public class AiCodeGeneratorFacade {
      *
      * @param userMessage     用户提示词
      * @param codeGenTypeEnum 代码生成类型
-     * @param appId 应用 ID
+     * @param appId           应用 ID
      * @return 保存的目录
      */
     public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
@@ -69,7 +73,7 @@ public class AiCodeGeneratorFacade {
      *
      * @param userMessage     用户提示词
      * @param codeGenTypeEnum 代码生成类型
-     * @param appId 应用 ID
+     * @param appId           应用 ID
      * @return 保存的目录
      */
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
@@ -89,7 +93,7 @@ public class AiCodeGeneratorFacade {
             }
             case VUE_PROJECT -> {
                 TokenStream tokenStream = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
-                yield processTokenStream(tokenStream);
+                yield processTokenStream(tokenStream, appId);
             }
             default -> {
                 String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
@@ -102,9 +106,10 @@ public class AiCodeGeneratorFacade {
      * 将 TokenStream 转换为 Flux<String>，并传递工具调用信息
      *
      * @param tokenStream TokenStream 对象
+     * @param appId       应用 ID
      * @return Flux<String> 流式响应
      */
-    private Flux<String> processTokenStream(TokenStream tokenStream) {
+    private Flux<String> processTokenStream(TokenStream tokenStream, Long appId) {
         return Flux.create(sink -> tokenStream.onPartialResponse((String partialResponse) -> {
                     AiResponseMessage aiResponseMessage = new AiResponseMessage(partialResponse);
                     sink.next(JSONUtil.toJsonStr(aiResponseMessage));
@@ -117,7 +122,12 @@ public class AiCodeGeneratorFacade {
                     ToolExecutedMessage toolExecutedMessage = new ToolExecutedMessage(toolExecution);
                     sink.next(JSONUtil.toJsonStr(toolExecutedMessage));
                 })
-                .onCompleteResponse((ChatResponse response) -> sink.complete())
+                .onCompleteResponse((ChatResponse response) -> {
+                    // 执行 Vue 项目构建（同步执行，确保预览时项目已就绪）
+                    String projectPath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + "vue_project_" + appId;
+                    vueProjectBuilder.buildProject(projectPath);
+                    sink.complete();
+                })
                 .onError((Throwable error) -> {
                     error.printStackTrace();
                     sink.error(error);
@@ -130,7 +140,7 @@ public class AiCodeGeneratorFacade {
      *
      * @param codeStream  代码流
      * @param codeGenType 代码生成类型
-     * @param appId 应用 ID
+     * @param appId       应用 ID
      * @return 流式响应
      */
     private Flux<String> processCodeStream(Flux<String> codeStream, CodeGenTypeEnum codeGenType, Long appId) {

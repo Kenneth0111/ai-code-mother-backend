@@ -55,9 +55,9 @@ public class RateLimitAspect {
     /**
      * 生成限流key
      *
-     * @param point     切点信息，用于获取被限流的方法与上下文
-     * @param rateLimit 限流配置（限流类型、key前缀等）
-     * @return 限流key字符串（包含自定义前缀及类型维度，如 api/user/ip）
+     * @param point     切点信息
+     * @param rateLimit 限流配置
+     * @return 限流key
      */
     private String generateRateLimitKey(JoinPoint point, RateLimit rateLimit) {
         StringBuilder keyBuilder = new StringBuilder();

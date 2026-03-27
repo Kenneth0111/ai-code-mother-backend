@@ -1,10 +1,11 @@
 package com.example.aicodemother.core.builder;
 
-import cn.hutool.core.util.RuntimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -77,8 +78,7 @@ public class VueProjectBuilder {
      */
     private boolean executeNpmInstall(File projectDir) {
         log.info("执行 npm install...");
-        String command = String.format("%s install", buildCommand());
-        return executeCommand(projectDir, command, 300); // 5分钟超时
+        return executeCommand(projectDir, new String[]{"npm", "install"}, 300);
     }
 
     /**
@@ -86,18 +86,7 @@ public class VueProjectBuilder {
      */
     private boolean executeNpmBuild(File projectDir) {
         log.info("执行 npm run build...");
-        String command = String.format("%s run build", buildCommand());
-        return executeCommand(projectDir, command, 180); // 3分钟超时
-    }
-
-    /**
-     * 根据操作系统构造命令
-     */
-    private String buildCommand() {
-        if (isWindows()) {
-            return "npm" + ".cmd";
-        }
-        return "npm";
+        return executeCommand(projectDir, new String[]{"npm", "run", "build"}, 180);
     }
 
     /**
@@ -113,19 +102,36 @@ public class VueProjectBuilder {
      * 执行命令
      *
      * @param workingDir     工作目录
-     * @param command        命令字符串
+     * @param args           命令及参数数组
      * @param timeoutSeconds 超时时间（秒）
      * @return 是否执行成功
      */
-    private boolean executeCommand(File workingDir, String command, int timeoutSeconds) {
+    private boolean executeCommand(File workingDir, String[] args, int timeoutSeconds) {
+        // Windows 下需要通过 cmd /c 执行
+        String[] fullCmd;
+        if (isWindows()) {
+            fullCmd = new String[args.length + 2];
+            fullCmd[0] = "cmd";
+            fullCmd[1] = "/c";
+            System.arraycopy(args, 0, fullCmd, 2, args.length);
+        } else {
+            fullCmd = args;
+        }
         try {
-            log.info("在目录 {} 中执行命令: {}", workingDir.getAbsolutePath(), command);
-            Process process = RuntimeUtil.exec(
-                    null,
-                    workingDir,
-                    command.split("\\s+") // 命令分割为数组
-            );
-            // 等待进程完成，设置超时
+            log.info("在目录 {} 中执行命令: {}", workingDir.getAbsolutePath(), String.join(" ", fullCmd));
+            ProcessBuilder pb = new ProcessBuilder(fullCmd);
+            pb.directory(workingDir);
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            // 必须消费输出流，否则缓冲区满时子进程会阻塞
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    log.debug("[npm] {}", line);
+                    output.append(line).append("\n");
+                }
+            }
             boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
             if (!finished) {
                 log.error("命令执行超时（{}秒），强制终止进程", timeoutSeconds);
@@ -134,18 +140,18 @@ public class VueProjectBuilder {
             }
             int exitCode = process.exitValue();
             if (exitCode == 0) {
-                log.info("命令执行成功: {}", command);
+                log.info("命令执行成功: {}", String.join(" ", fullCmd));
                 return true;
             } else {
-                log.error("命令执行失败，退出码: {}", exitCode);
+                log.error("命令执行失败，退出码: {}，输出:\n{}", exitCode, output);
                 return false;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("执行命令时被中断: {}", command, e);
+            log.error("执行命令时被中断: {}", String.join(" ", fullCmd), e);
             return false;
         } catch (Exception e) {
-            log.error("执行命令失败: {}, 错误信息: {}", command, e.getMessage(), e);
+            log.error("执行命令失败: {}, 错误信息: {}", String.join(" ", fullCmd), e.getMessage(), e);
             return false;
         }
     }

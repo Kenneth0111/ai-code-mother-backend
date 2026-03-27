@@ -21,6 +21,8 @@ import com.example.aicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import com.example.aicodemother.model.enums.CodeGenTypeEnum;
 import com.example.aicodemother.model.vo.AppVO;
 import com.example.aicodemother.model.vo.UserVO;
+import com.example.aicodemother.monitor.MonitorContext;
+import com.example.aicodemother.monitor.MonitorContextHolder;
 import com.example.aicodemother.service.ChatHistoryService;
 import com.example.aicodemother.service.ScreenshotService;
 import com.example.aicodemother.service.UserService;
@@ -31,6 +33,7 @@ import com.example.aicodemother.mapper.AppMapper;
 import com.example.aicodemother.service.AppService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -51,6 +54,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppService{
+
+    @Value("${code.deploy-host:http://localhost}")
+    private String deployHost;
 
     @Resource
     private UserService userService;
@@ -93,10 +99,19 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         }
         // 5. 调用 AI 前，先保存用户消息到数据库中
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
-        // 6. 调用 AI 生成代码（流式）
+        // 6. 设置监控上下文（用户 ID 和 应用 ID）
+        MonitorContextHolder.setContext(
+                MonitorContext.builder()
+                        .userId(loginUser.getId().toString())
+                        .appId(appId.toString())
+                        .build()
+        );
+        // 7. 调用 AI 生成代码（流式）
         Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
-        // 7. 收集 AI 响应的内容，并且在完成后，保存记录到对话历史
-        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum);
+        // 8. 收集 AI 响应的内容，并且在完成后，保存记录到对话历史
+        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum)
+                // 流结束时清理（无论成功/失败/取消）
+                .doFinally(signalType -> MonitorContextHolder.clearContext());
     }
 
     @Override
@@ -174,7 +189,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更新应用部署信息失败");
         // 10. 得到可访问的 URL 地址
-        String appDeployUrl = String.format("%s/%s/", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        String appDeployUrl = String.format("%s/%s/", deployHost, deployKey);
         // 11. 异步生成截图并且更新应用封面
         generateAppScreenshotAsync(appId, appDeployUrl);
         return appDeployUrl;

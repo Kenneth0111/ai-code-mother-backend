@@ -1,6 +1,8 @@
 ### CUSTOM ###
 application-local.yml
 application-prod.yml
+ai-code-mother-microservice/ai-code-app/src/main/resources/application.yml
+ai-code-mother-microservice/ai-code-screenshot/src/main/resources/application.yml
 tmp
 
 HELP.md
